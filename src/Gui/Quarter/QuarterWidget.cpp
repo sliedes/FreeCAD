@@ -1,22 +1,22 @@
 /**************************************************************************\
  * Copyright (c) Kongsberg Oil & Gas Technologies AS
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  * Redistributions of source code must retain the above copyright notice,
  * this list of conditions and the following disclaimer.
- * 
+ *
  * Redistributions in binary form must reproduce the above copyright
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
- * 
+ *
  * Neither the name of the copyright holder nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -160,6 +160,15 @@ public:
         //surfaceFormat.setMajorVersion(3);
         //surfaceFormat.setMinorVersion(2);
         //surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
+
+        // On Wayland, we typically get a core profile unless we explicitly
+        // request a compatibility profile. On llvmpipe, this still seems to
+        // "just work" even if out of spec; on proprietary Nvidia drivers, it
+        // does not.
+        surfaceFormat.setRenderableType(QSurfaceFormat::OpenGL);
+        surfaceFormat.setProfile(QSurfaceFormat::CompatibilityProfile);
+        surfaceFormat.setOption(QSurfaceFormat::DeprecatedFunctions, true);
+
 #if defined (_DEBUG) && 0
         surfaceFormat.setOption(QSurfaceFormat::DebugContext);
 #endif
@@ -234,7 +243,7 @@ public:
 QuarterWidget::QuarterWidget(const QSurfaceFormat & format, QWidget * parent, const QOpenGLWidget * sharewidget, Qt::WindowFlags f)
   : inherited(parent)
 {
-  Q_UNUSED(f); 
+  Q_UNUSED(f);
   this->constructor(format, sharewidget);
 }
 
@@ -242,7 +251,7 @@ QuarterWidget::QuarterWidget(const QSurfaceFormat & format, QWidget * parent, co
 QuarterWidget::QuarterWidget(QWidget * parent, const QOpenGLWidget * sharewidget, Qt::WindowFlags f)
   : inherited(parent)
 {
-  Q_UNUSED(f); 
+  Q_UNUSED(f);
   this->constructor(QSurfaceFormat(), sharewidget);
 }
 
@@ -250,7 +259,7 @@ QuarterWidget::QuarterWidget(QWidget * parent, const QOpenGLWidget * sharewidget
 QuarterWidget::QuarterWidget(QOpenGLContext * context, QWidget * parent, const QOpenGLWidget * sharewidget, Qt::WindowFlags f)
   : inherited(parent)
 {
-  Q_UNUSED(f); 
+  Q_UNUSED(f);
   this->constructor(context->format(), sharewidget);
 }
 
@@ -259,14 +268,14 @@ QuarterWidget::constructor(const QSurfaceFormat & format, const QOpenGLWidget * 
 {
   QGraphicsScene* scene = new QGraphicsScene(this);
   setScene(scene);
-  setViewport(new CustomGLWidget(format, this, sharewidget)); 
-  
+  setViewport(new CustomGLWidget(format, this, sharewidget));
+
   setFrameStyle(QFrame::NoFrame);
   setAutoFillBackground(false);
   viewport()->setAutoFillBackground(false);
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    
+
   PRIVATE(this) = new QuarterWidgetP(this, sharewidget);
 
   PRIVATE(this)->sorendermanager = new SoRenderManager;
@@ -680,7 +689,7 @@ QuarterWidget::setSoRenderManager(SoRenderManager * manager)
   // ref before deleting the old scene manager to avoid that the nodes are deleted
   if (scene) scene->ref();
   if (camera) camera->ref();
-  
+
   if (PRIVATE(this)->initialsorendermanager) {
     delete PRIVATE(this)->sorendermanager;
     PRIVATE(this)->initialsorendermanager = false;
@@ -895,8 +904,8 @@ void QuarterWidget::paintEvent(QPaintEvent* event)
     w->makeCurrent();
     this->actualRedraw();
 
-    //start the standard graphics view processing for all widgets and graphic items. As 
-    //QGraphicsView initaliizes a QPainter which changes the Opengl context in an unpredictable 
+    //start the standard graphics view processing for all widgets and graphic items. As
+    //QGraphicsView initaliizes a QPainter which changes the Opengl context in an unpredictable
     //manner we need to store the context and recreate it after Qt is done.
     glPushAttrib(GL_MULTISAMPLE_BIT_EXT);
     inherited::paintEvent(event);
@@ -1250,7 +1259,7 @@ QuarterWidget::setNavigationModeFile(const QUrl & url)
 
   if (stateMachine &&
       stateMachine->isOfType(SoScXMLStateMachine::getClassTypeId())) {
-    SoScXMLStateMachine * newsm = 
+    SoScXMLStateMachine * newsm =
       static_cast<SoScXMLStateMachine *>(stateMachine);
     if (PRIVATE(this)->currentStateMachine) {
       this->removeStateMachine(PRIVATE(this)->currentStateMachine);
